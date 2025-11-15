@@ -25,7 +25,7 @@ export const generateResponse = async (
   file?: { name: string, type: string, data: string }
 ): Promise<{ text: string, grounding?: GroundingChunk[] }> => {
 
-    if (!process.env.API_KEY) {
+    if (!process.env.API_KEY || process.env.API_KEY.trim() === '') {
       throw new Error("API_KEY is not set. Please configure the API_KEY environment variable in your deployment settings.");
     }
 
