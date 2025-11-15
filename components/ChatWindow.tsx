@@ -1,10 +1,8 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatSession, ChatMessage, ChatMode, Theme } from '../types';
 import PromptInput from './PromptInput';
 import Message from './Message';
 import { generateResponse } from '../services/geminiService';
-import { useGeolocation } from '../hooks/useGeolocation';
 
 interface ChatWindowProps {
   session: ChatSession;
@@ -15,7 +13,6 @@ interface ChatWindowProps {
 const ChatWindow: React.FC<ChatWindowProps> = ({ session, onUpdateSession, theme }) => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { location, error: geoError } = useGeolocation();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -54,7 +51,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ session, onUpdateSession, theme
     onUpdateSession(session.id, updatedMessages, session.mode, newTitle);
 
     try {
-      const response = await generateResponse(userMessage.content, session.mode, updatedMessages.slice(0, -1), userMessage.file, location);
+      const response = await generateResponse(userMessage.content, session.mode, updatedMessages.slice(0, -1), userMessage.file);
       const modelMessage: ChatMessage = {
         id: `msg-${Date.now() + 1}`,
         role: 'model',
@@ -84,7 +81,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ session, onUpdateSession, theme
     onUpdateSession(session.id, historyWithoutLastResponse);
 
      try {
-      const response = await generateResponse(lastUserMessage.content, session.mode, historyWithoutLastResponse.slice(0, -1), lastUserMessage.file, location);
+      const response = await generateResponse(lastUserMessage.content, session.mode, historyWithoutLastResponse.slice(0, -1), lastUserMessage.file);
       const modelMessage: ChatMessage = {
         id: `msg-${Date.now() + 1}`,
         role: 'model',
@@ -119,8 +116,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ session, onUpdateSession, theme
             adjustmentPrompt, 
             session.mode, 
             historyWithOldResponse,
-            undefined, 
-            location
+            undefined
         );
         const newModelMessage: ChatMessage = {
             id: `msg-${Date.now() + 1}`,
@@ -162,7 +158,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ session, onUpdateSession, theme
       </div>
       <div className="p-4 bg-[var(--color-bg-primary)]/50 border-t border-[var(--color-border)]">
         <PromptInput onSend={handleSend} isLoading={isLoading} mode={session.mode} onModeChange={handleModeChange} />
-        {geoError && <p className="text-xs text-red-400 mt-1 text-center">Geolocation error: {geoError}. Maps grounding may be less accurate.</p>}
       </div>
     </div>
   );

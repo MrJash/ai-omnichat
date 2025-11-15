@@ -22,9 +22,12 @@ export const generateResponse = async (
   prompt: string,
   mode: ChatMode,
   history: ChatMessage[],
-  file?: { name: string, type: string, data: string },
-  location?: { lat: number, lng: number } | null
+  file?: { name: string, type: string, data: string }
 ): Promise<{ text: string, grounding?: GroundingChunk[] }> => {
+
+    if (!process.env.API_KEY) {
+      throw new Error("API_KEY is not set. Please configure the API_KEY environment variable in your deployment settings.");
+    }
 
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
     
@@ -64,12 +67,8 @@ export const generateResponse = async (
     const useFlowchart = /\b(flowchart|diagram)\b/.test(lowerCasePrompt);
 
     const tools: any[] = [];
-    const toolConfig: any = {};
     if (useMaps) {
         tools.push({ googleMaps: {} });
-        if(location) {
-            toolConfig.retrievalConfig = { latLng: { latitude: location.lat, longitude: location.lng }};
-        }
     }
     if (useSearch && !useMaps) { // Can be combined but let's prioritize maps if keywords for both exist
         tools.push({ googleSearch: {} });
@@ -110,7 +109,6 @@ export const generateResponse = async (
         config: {
             systemInstruction,
             tools,
-            toolConfig
         }
     });
 
