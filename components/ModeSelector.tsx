@@ -6,9 +6,10 @@ import { ChevronDown } from './icons';
 interface ModeSelectorProps {
   selectedMode: ChatMode;
   onModeChange: (mode: ChatMode) => void;
+  customInstruction: string;
 }
 
-const ModeSelector: React.FC<ModeSelectorProps> = ({ selectedMode, onModeChange }) => {
+const ModeSelector: React.FC<ModeSelectorProps> = ({ selectedMode, onModeChange, customInstruction }) => {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -27,6 +28,14 @@ const ModeSelector: React.FC<ModeSelectorProps> = ({ selectedMode, onModeChange 
     setIsOpen(false);
   }
 
+  const availableModes = Object.values(ChatMode).filter(mode => {
+      if (mode === ChatMode.CUSTOM) {
+          // Only show 'Custom' mode if a custom instruction is set
+          return customInstruction && customInstruction.trim() !== '';
+      }
+      return true;
+  });
+
   return (
     <div ref={wrapperRef} className="relative">
       <button 
@@ -39,7 +48,7 @@ const ModeSelector: React.FC<ModeSelectorProps> = ({ selectedMode, onModeChange 
 
       {isOpen && (
         <div className="absolute bottom-full mb-2 w-48 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-md shadow-lg z-10">
-          {Object.values(ChatMode).map((mode) => (
+          {availableModes.map((mode) => (
             <button
               key={mode}
               onClick={() => handleSelect(mode)}

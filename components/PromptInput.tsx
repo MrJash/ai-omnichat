@@ -9,9 +9,10 @@ interface PromptInputProps {
   isLoading: boolean;
   mode: ChatMode;
   onModeChange: (mode: ChatMode) => void;
+  customInstruction: string;
 }
 
-const PromptInput: React.FC<PromptInputProps> = ({ onSend, isLoading, mode, onModeChange }) => {
+const PromptInput: React.FC<PromptInputProps> = ({ onSend, isLoading, mode, onModeChange, customInstruction }) => {
   const [prompt, setPrompt] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -70,7 +71,7 @@ const PromptInput: React.FC<PromptInputProps> = ({ onSend, isLoading, mode, onMo
         </div>
       )}
       <div className={`relative flex items-center gap-2 p-2 bg-[var(--color-bg-tertiary)] ${file ? 'rounded-b-lg' : 'rounded-lg'}`}>
-        <ModeSelector selectedMode={mode} onModeChange={onModeChange} />
+        <ModeSelector selectedMode={mode} onModeChange={onModeChange} customInstruction={customInstruction} />
         <button onClick={() => fileInputRef.current?.click()} className="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] rounded-md transition-colors">
             <Paperclip className="w-5 h-5" />
         </button>

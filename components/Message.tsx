@@ -1,11 +1,10 @@
-
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ChatMessage, ChatMode, Theme } from '../types';
 import Flowchart from './Flowchart';
 import ResponseActions from './ResponseActions';
-import { User, Bot, Globe, MapPin, File, Image as ImageIcon, Loader } from './icons';
+import { User, Bot, Globe, MapPin, File, Image as ImageIcon, Loader, Clipboard, Check } from './icons';
 
 interface MessageProps {
   message: ChatMessage;
@@ -16,24 +15,78 @@ interface MessageProps {
   theme: Theme;
 }
 
+
+// New component for rendering code blocks
+interface CodeBlockProps {
+  language: string;
+  children: string;
+}
+
+const CodeBlock: React.FC<CodeBlockProps> = ({ language, children }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(children).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <div className="bg-[var(--color-bg-secondary)] rounded-md my-2 text-left">
+      <div className="flex justify-between items-center px-4 py-1.5 bg-[var(--color-bg-tertiary)]/50 rounded-t-md">
+        <span className="text-xs text-[var(--color-text-secondary)] font-sans">{language}</span>
+        <button 
+          onClick={handleCopy} 
+          className="flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+        >
+          {copied ? (
+            <>
+              <Check className="w-3.5 h-3.5 text-green-400" />
+              Copied!
+            </>
+          ) : (
+            <>
+              <Clipboard className="w-3.5 h-3.5" />
+              Copy code
+            </>
+          )}
+        </button>
+      </div>
+      <pre className="p-4 text-sm overflow-x-auto"><code className={`language-${language}`}>{children}</code></pre>
+    </div>
+  );
+};
+
 const Message: React.FC<MessageProps> = ({ message, isLastMessage, onRegenerate, onAdjustLength, mode, theme }) => {
+  // FIX: Define isModel based on the message role.
   const isModel = message.role === 'model';
   const isLightTheme = theme === 'solaris';
 
   const renderers = useMemo(() => ({
     code({ node, inline, className, children, ...props }: any) {
       const match = /language-(\w+)/.exec(className || '');
+      
       if (match && match[1] === 'mermaid') {
         return <Flowchart chart={String(children)} />;
       }
+
+      if (inline) {
+        return (
+          <code className="bg-[var(--color-bg-tertiary)] text-[var(--color-accent)] px-1 py-0.5 rounded font-mono text-sm" {...props}>
+            {children}
+          </code>
+        );
+      }
+
       return !inline && match ? (
-        <code className={className} {...props}>
-          {children}
-        </code>
+        <CodeBlock language={match[1]}>
+          {String(children).replace(/\n$/, '')}
+        </CodeBlock>
       ) : (
-        <code className="bg-[var(--color-bg-tertiary)] text-[var(--color-accent)] px-1 py-0.5 rounded" {...props}>
-          {children}
-        </code>
+        <CodeBlock language="text">
+          {String(children).replace(/\n$/, '')}
+        </CodeBlock>
       );
     },
   }), []);
@@ -74,7 +127,7 @@ const Message: React.FC<MessageProps> = ({ message, isLastMessage, onRegenerate,
       <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${isModel ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-bg-tertiary)]'}`}>
         {isModel ? <Bot className="w-5 h-5 text-white" /> : <User className="w-5 h-5 text-[var(--color-text-primary)]" />}
       </div>
-      <div className={`w-full max-w-4xl p-4 rounded-lg shadow-md ${isModel ? 'bg-[var(--color-model-message-bg)]' : 'bg-[var(--color-user-message-bg)]'}`}>
+      <div className={`max-w-4xl p-4 rounded-lg shadow-md ${isModel ? 'bg-[var(--color-model-message-bg)]' : 'bg-[var(--color-user-message-bg)]'}`}>
         {message.isLoading ? (
           <div className="flex items-center gap-2">
              <Loader className="w-5 h-5 animate-spin"/>
@@ -82,7 +135,7 @@ const Message: React.FC<MessageProps> = ({ message, isLastMessage, onRegenerate,
           </div>
         ) : (
           <>
-            <div className={`prose prose-sm max-w-none prose-pre:bg-[var(--color-bg-secondary)] prose-pre:p-4 prose-pre:rounded-md ${!isLightTheme && 'prose-invert'}`}>
+            <div className={`prose prose-sm max-w-none ${!isLightTheme && 'prose-invert'}`}>
               <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
                 {message.content}
               </ReactMarkdown>

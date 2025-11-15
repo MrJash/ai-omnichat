@@ -1,9 +1,11 @@
 export enum ChatMode {
   AI_ASSISTANT = 'AI Assistant',
   STUDY_MODE = 'Study Mode',
+  CODING_MODE = 'Coding Mode',
   FORMAL = 'Formal',
   PRECISE = 'Precise',
   QUICK_CHAT = 'Quick Chat',
+  CUSTOM = 'Custom',
 }
 
 export type Theme = 'twilight' | 'solaris' | 'midnight-dusk';
@@ -46,4 +48,6 @@ export interface ChatSession {
   title: string;
   messages: ChatMessage[];
   mode: ChatMode;
+  model: string;
+  systemInstruction: string;
 }

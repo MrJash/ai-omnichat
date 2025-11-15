@@ -1,16 +1,22 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatSession, ChatMessage, ChatMode, Theme } from '../types';
 import PromptInput from './PromptInput';
 import Message from './Message';
 import { generateResponse } from '../services/geminiService';
+import { Menu } from './icons';
+import { CHAT_MODES } from '../constants';
 
 interface ChatWindowProps {
   session: ChatSession;
-  onUpdateSession: (sessionId: string, updatedMessages: ChatMessage[], newMode?: ChatMode, newTitle?: string) => void;
+  onUpdateSession: (sessionId: string, updates: Partial<ChatSession>) => void;
   theme: Theme;
+  onToggleSidebar: () => void;
+  defaultModel: string;
+  customInstruction: string;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ session, onUpdateSession, theme }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ session, onUpdateSession, theme, onToggleSidebar, defaultModel, customInstruction }) => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -46,19 +52,23 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ session, onUpdateSession, theme
 
   const processMessage = async (userMessage: ChatMessage) => {
     const updatedMessages = [...session.messages, userMessage];
-    const newTitle = session.messages.length === 0 ? userMessage.content.substring(0, 30) + '...' : session.title;
+    const isFirstMessage = session.messages.length === 0;
+    const newTitle = isFirstMessage && userMessage.content.length > 0
+        ? userMessage.content.substring(0, 30) + (userMessage.content.length > 30 ? '...' : '')
+        : session.title;
     
-    onUpdateSession(session.id, updatedMessages, session.mode, newTitle);
+    onUpdateSession(session.id, { messages: updatedMessages, title: newTitle });
+    const sessionForApi = { ...session, messages: updatedMessages, title: newTitle };
 
     try {
-      const response = await generateResponse(userMessage.content, session.mode, updatedMessages.slice(0, -1), userMessage.file);
+      const response = await generateResponse(userMessage.content, sessionForApi, userMessage.file);
       const modelMessage: ChatMessage = {
         id: `msg-${Date.now() + 1}`,
         role: 'model',
         content: response.text,
         grounding: response.grounding,
       };
-      onUpdateSession(session.id, [...updatedMessages, modelMessage], session.mode, newTitle);
+      onUpdateSession(session.id, { messages: [...updatedMessages, modelMessage] });
     } catch (error) {
       console.error("Error generating response:", error);
       const errorMessage: ChatMessage = {
@@ -66,7 +76,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ session, onUpdateSession, theme
         role: 'model',
         content: `Sorry, I encountered an error. ${error instanceof Error ? error.message : 'Please try again.'}`,
       };
-      onUpdateSession(session.id, [...updatedMessages, errorMessage], session.mode, newTitle);
+      onUpdateSession(session.id, { messages: [...updatedMessages, errorMessage] });
     } finally {
       setIsLoading(false);
     }
@@ -78,17 +88,18 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ session, onUpdateSession, theme
 
     setIsLoading(true);
     const historyWithoutLastResponse = session.messages.slice(0, -1);
-    onUpdateSession(session.id, historyWithoutLastResponse);
+    onUpdateSession(session.id, { messages: historyWithoutLastResponse });
+    const sessionForApi = { ...session, messages: historyWithoutLastResponse };
 
      try {
-      const response = await generateResponse(lastUserMessage.content, session.mode, historyWithoutLastResponse.slice(0, -1), lastUserMessage.file);
+      const response = await generateResponse(lastUserMessage.content, sessionForApi, lastUserMessage.file);
       const modelMessage: ChatMessage = {
         id: `msg-${Date.now() + 1}`,
         role: 'model',
         content: response.text,
         grounding: response.grounding,
       };
-      onUpdateSession(session.id, [...historyWithoutLastResponse, modelMessage]);
+      onUpdateSession(session.id, { messages: [...historyWithoutLastResponse, modelMessage] });
     } catch (error) {
       console.error("Error regenerating response:", error);
       const errorMessage: ChatMessage = {
@@ -96,7 +107,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ session, onUpdateSession, theme
         role: 'model',
         content: `Sorry, I couldn't regenerate the response. ${error instanceof Error ? error.message : 'Please try again.'}`,
       };
-      onUpdateSession(session.id, [...historyWithoutLastResponse, errorMessage]);
+      onUpdateSession(session.id, { messages: [...historyWithoutLastResponse, errorMessage] });
     } finally {
       setIsLoading(false);
     }
@@ -107,15 +118,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ session, onUpdateSession, theme
     const historyWithOldResponse = [...session.messages];
     const historyForUiUpdate = session.messages.slice(0, -1);
     
-    onUpdateSession(session.id, historyForUiUpdate);
+    onUpdateSession(session.id, { messages: historyForUiUpdate });
 
     const adjustmentPrompt = `Make your last response ${adjustment}.`;
+    const sessionForApi = { ...session, messages: historyWithOldResponse };
 
     try {
         const response = await generateResponse(
             adjustmentPrompt, 
-            session.mode, 
-            historyWithOldResponse,
+            sessionForApi,
             undefined
         );
         const newModelMessage: ChatMessage = {
@@ -124,22 +135,43 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ session, onUpdateSession, theme
             content: response.text,
             grounding: response.grounding,
         };
-        onUpdateSession(session.id, [...historyForUiUpdate, newModelMessage]);
+        onUpdateSession(session.id, { messages: [...historyForUiUpdate, newModelMessage] });
     } catch (error) {
         console.error("Error adjusting length:", error);
-        onUpdateSession(session.id, historyWithOldResponse);
+        onUpdateSession(session.id, { messages: historyWithOldResponse });
     } finally {
         setIsLoading(false);
     }
   };
 
   const handleModeChange = (newMode: ChatMode) => {
-    onUpdateSession(session.id, session.messages, newMode);
+    let newModel: string;
+    let newInstruction: string;
+
+    if (newMode === ChatMode.CUSTOM) {
+        newModel = defaultModel;
+        newInstruction = customInstruction;
+    } else {
+        newModel = CHAT_MODES[newMode].model;
+        newInstruction = CHAT_MODES[newMode].instruction;
+    }
+    
+    onUpdateSession(session.id, {
+        mode: newMode,
+        model: newModel,
+        systemInstruction: newInstruction
+    });
   };
   
   return (
     <div className="flex-1 flex flex-col h-full">
-      <div id="messages" className="flex-1 overflow-y-auto p-6 space-y-6">
+       <div className="flex items-center p-2 border-b border-[var(--color-border)] md:hidden bg-[var(--color-bg-secondary)] flex-shrink-0">
+        <button onClick={onToggleSidebar} className="p-2 rounded-md text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)]">
+          <Menu className="w-6 h-6" />
+        </button>
+        <h2 className="text-sm font-semibold text-[var(--color-text-primary)] truncate ml-2">{session.title}</h2>
+      </div>
+      <div id="messages" className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
         {session.messages.map((msg, index) => (
           <Message 
             key={msg.id} 
@@ -156,8 +188,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ session, onUpdateSession, theme
           )}
         <div ref={messagesEndRef} />
       </div>
-      <div className="p-4 bg-[var(--color-bg-primary)]/50 border-t border-[var(--color-border)]">
-        <PromptInput onSend={handleSend} isLoading={isLoading} mode={session.mode} onModeChange={handleModeChange} />
+      <div className="flex-shrink-0 p-2 md:p-4 bg-[var(--color-bg-primary)]/50 border-t border-[var(--color-border)]">
+        <PromptInput onSend={handleSend} isLoading={isLoading} mode={session.mode} onModeChange={handleModeChange} customInstruction={customInstruction} />
       </div>
     </div>
   );
