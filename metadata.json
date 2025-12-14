@@ -1,0 +1,5 @@
+{
+  "name": "AI OmniChat",
+  "description": "A multi-modal AI chatbot supporting text, image generation, flowcharts, file analysis (images/PDFs), and grounded search capabilities with Google Search and Google Maps.",
+  "requestFramePermissions": []
+}

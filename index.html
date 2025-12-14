@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI OmniChat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+      :root {
+        --color-bg-primary: #0F172A;
+        --color-bg-secondary: #1E293B;
+        --color-bg-tertiary: #334155;
+        --color-bg-hover: #475569;
+        --color-accent: #6366F1;
+        --color-accent-hover: #4F46E5;
+        --color-text-primary: #F1F5F9;
+        --color-text-secondary: #94A3B8;
+        --color-border: #334155;
+        --color-model-message-bg: rgba(51, 65, 85, 0.5);
+        --color-user-message-bg: rgba(79, 70, 229, 0.2);
+        --color-flowchart-bg: #F1F5F9;
+      }
+      .theme-twilight {
+        --color-bg-primary: #0F172A;
+        --color-bg-secondary: #1E293B;
+        --color-bg-tertiary: #334155;
+        --color-bg-hover: #475569;
+        --color-accent: #6366F1;
+        --color-accent-hover: #4F46E5;
+        --color-text-primary: #F1F5F9;
+        --color-text-secondary: #94A3B8;
+        --color-border: #334155;
+        --color-model-message-bg: rgba(51, 65, 85, 0.5);
+        --color-user-message-bg: rgba(79, 70, 229, 0.2);
+        --color-flowchart-bg: #F1F5F9;
+      }
+      .theme-solaris {
+        --color-bg-primary: #F8FAFC;
+        --color-bg-secondary: #F1F5F9;
+        --color-bg-tertiary: #E2E8F0;
+        --color-bg-hover: #CBD5E1;
+        --color-accent: #F97316;
+        --color-accent-hover: #EA580C;
+        --color-text-primary: #0F172A;
+        --color-text-secondary: #475569;
+        --color-border: #E2E8F0;
+        --color-model-message-bg: #FFFFFF;
+        --color-user-message-bg: rgba(249, 115, 22, 0.1);
+        --color-flowchart-bg: #1E293B;
+      }
+      .theme-midnight-dusk {
+        --color-bg-primary: #1C1917;
+        --color-bg-secondary: #292524;
+        --color-bg-tertiary: #44403C;
+        --color-bg-hover: #57534E;
+        --color-accent: #F59E0B;
+        --color-accent-hover: #D97706;
+        --color-text-primary: #FAFAF9;
+        --color-text-secondary: #A8A29E;
+        --color-border: #44403C;
+        --color-model-message-bg: rgba(68, 64, 60, 0.5);
+        --color-user-message-bg: rgba(245, 158, 11, 0.2);
+        --color-flowchart-bg: #F1F5F9;
+      }
+      .prose {
+        color: var(--color-text-primary);
+      }
+      .prose a {
+        color: var(--color-accent);
+      }
+    </style>
+    <script>
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      mermaid.initialize({ startOnLoad: false });
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.27.0",
+    "react-markdown": "https://aistudiocdn.com/react-markdown@^10.1.0",
+    "remark-gfm": "https://aistudiocdn.com/remark-gfm@^4.0.1"
+  }
+}
+</script>
+</head>
+  <body class="bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
