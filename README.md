@@ -1,20 +1,69 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# OmniChat
 
-# Run and deploy your AI Studio app
+OmniChat is a modern AI chat application built using **React, Vite, and TypeScript**, powered by **Google Gemini**.  
+It provides multiple interaction modes in a clean and responsive interface for learning, coding, and everyday assistance.
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/drive/1BWc09jlpm2gshQ8lu8H3oCaZEUN0084D
+## Features
+
+- Multiple chat modes (AI Assistant, Study Mode, Coding Mode, Precise, Quick Chat)
+- Clean and responsive user interface
+- Powered by Google Gemini API
+- Fast development and build using Vite
+
+---
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+### Prerequisites
+- Node.js (v18 or later recommended)
+
+### Setup
+
+Install dependencies:
+```bash
+npm install
+reate a .env.local file in the project root and add your API key:
+
+GEMINI_API_KEY=your_api_key_here
 
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Run the development server:
+
+npm run dev
+
+
+Open in browser:
+
+http://localhost:5173
+
+Build
+
+To create a production build:
+
+npm run build
+
+Tech Stack
+
+React
+
+TypeScript
+
+Vite
+
+Google Gemini API
+
+License
+
+This project is intended for learning and personal use.
+
+
+---
+
+If you want:
+- a **1-page ultra-minimal README**
+- a **portfolio-style README**
+- or **deployment instructions added**
+
+just tell me what style you want.
