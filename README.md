@@ -24,46 +24,47 @@ It provides multiple interaction modes in a clean and responsive interface for l
 Install dependencies:
 ```bash
 npm install
-reate a .env.local file in the project root and add your API key:
+```
 
+Create a `.env.local` file in the project root and add your API key:
+
+```bash
 GEMINI_API_KEY=your_api_key_here
-
+```
 
 Run the development server:
 
+```bash
 npm run dev
-
+```
 
 Open in browser:
 
+```
 http://localhost:5173
-
-Build
-
-To create a production build:
-
-npm run build
-
-Tech Stack
-
-React
-
-TypeScript
-
-Vite
-
-Google Gemini API
-
-License
-
-This project is intended for learning and personal use.
-
+```
 
 ---
 
-If you want:
-- a **1-page ultra-minimal README**
-- a **portfolio-style README**
-- or **deployment instructions added**
+## Build
 
-just tell me what style you want.
+To create a production build:
+
+```bash
+npm run build
+```
+
+---
+
+## Tech Stack
+
+- React
+- TypeScript
+- Vite
+- Google Gemini API
+
+---
+
+## License
+
+This project is intended for learning and personal use.
